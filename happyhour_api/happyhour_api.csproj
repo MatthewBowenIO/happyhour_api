@@ -12,6 +12,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="MySql.Data" Version="6.10.6" />
+    <PackageReference Include="MySql.Web" Version="6.10.6" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace happyhour_api.Controllers
 {
     [Route("api/[controller]")]
-    public class SignupController
+    public class SignupController : Controller
     {
         private static readonly HttpClient client = new HttpClient();
 
@@ -33,6 +33,8 @@ namespace happyhour_api.Controllers
         [HttpPost]
         public void Post(SlashCommandPayload slashCommandPayload)
         {
+            HappyHourDB employStreamDb = HttpContext.RequestServices.GetService(typeof(HappyHourDB)) as HappyHourDB;
+
             var variable = slashCommandPayload;
             var responseUrl = slashCommandPayload.response_url;
 
