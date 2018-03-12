@@ -1,7 +1,8 @@
 ﻿using System;
+using happyhour_api.Enums;
 namespace happyhour_api.Models
 {
-    public class SlashCommandPayload
+    public class SlackCommandPayload
     {
         public string token { get; set; }
         public string team_id { get; set; }
@@ -16,5 +17,6 @@ namespace happyhour_api.Models
         public string text { get; set; }
         public string response_url { get; set; }
         public string trigger_id { get; set; }
+        public OptedInTime opt_in_time { get; set; }
     }
 }

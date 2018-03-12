@@ -7,6 +7,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using happyhour_api.Models;
 using Newtonsoft.Json;
+using happyhour_api.Enums;
 
 namespace happyhour_api.Controllers
 {
@@ -31,14 +32,41 @@ namespace happyhour_api.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post(SlashCommandPayload slashCommandPayload)
+        [Produces("application/json")]
+        public string Post(SlackCommandPayload slackCommandPayload)
         {
             HappyHourDB employStreamDb = HttpContext.RequestServices.GetService(typeof(HappyHourDB)) as HappyHourDB;
+            var returnString = String.Empty;
+            if(slackCommandPayload.text == null) {
+                return "Let us know what time you want to receive happy/cute gifs! 'happyhour Morning' for 10:30, 'happyhour Afternoon' for 3:30 or 'happyhour Both' for both! Because you deserve it!";
+            } else {
+                switch (slackCommandPayload.text.ToLower()) {
+                    case "emergency":
+                        SendResponseAsync(slackCommandPayload.response_url);
+                        break;
+                    case "morning":
+                        slackCommandPayload.opt_in_time = OptedInTime.Morning;
+                        returnString = "Thanks! You'll start receiving (hopefully) cute gifs at 10:30 every moring!";
+                        break;
+                    case "afternoon":
+                        slackCommandPayload.opt_in_time = OptedInTime.Afternoon;
+                        returnString = "Thanks! You'll start receiving (hopefully) cute gifs at 3:30 every afternoon!";
+                        break;
+                    case "both":
+                        slackCommandPayload.opt_in_time = OptedInTime.Both;
+                        returnString = "Oh no! Things must be rough. We'll make sure you get a little pick me up at 10:30am and 3:30pm!";
+                        break;
+                    default:
+                        break;
+                }
 
-            var variable = slashCommandPayload;
-            var responseUrl = slashCommandPayload.response_url;
-
-            var response = SendResponseAsync(responseUrl);
+                if(employStreamDb.DoesUserExist(slackCommandPayload)) {
+                    employStreamDb.UpdateUser(slackCommandPayload);
+                } else {
+                    employStreamDb.SaveUser(slackCommandPayload);
+                }
+            }
+            return returnString;
         }
 
         // PUT api/values/5
@@ -55,9 +83,7 @@ namespace happyhour_api.Controllers
 
         public async Task<string> SendResponseAsync(string responseUrl) {
             var giphyUrl = await GetGiphyGif();
-
-            var content = new StringContent("{\"text\":\"Hope this helps!\",\"attachments\":[{\"title\":\"Look at that little guy!\",\"fallback\":\"Your gif for the day!\",\"image_url\": \"" + giphyUrl + "\"}]}", Encoding.UTF8, "application/json");
-
+            var content = new StringContent("{\"text\":\"Hope this helps!\",\"attachments\":[{\"fallback\":\"Your gif for the day!\",\"image_url\": \"" + giphyUrl + "\"}]}", Encoding.UTF8, "application/json");
             var response = await client.PostAsync(responseUrl, content);
 
             return "Success";
